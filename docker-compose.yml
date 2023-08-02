@@ -1,0 +1,30 @@
+version: '3.3'
+
+services:
+  rocky1:
+    build:
+      context: rocky1/
+    hostname: 'rocky1.big.data'
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./data:/data
+    privileged: true
+  rocky2:
+    build:
+      context: rocky2/
+    hostname: 'rocky2.big.data'
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./data:/data
+    privileged: true
+  #rocky3:
+  #  build:
+  #    context: rocky3/
+  #  hostname: 'rocky3.big.data'
+  #  stdin_open: true
+  #  tty: true
+  #  volumes:
+  #    - ./data:/data
+  #  privileged: true
