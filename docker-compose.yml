@@ -19,12 +19,12 @@ services:
     volumes:
       - ./data:/data
     privileged: true
-  #rocky3:
-  #  build:
-  #    context: rocky3/
-  #  hostname: 'rocky3.big.data'
-  #  stdin_open: true
-  #  tty: true
-  #  volumes:
-  #    - ./data:/data
-  #  privileged: true
+  rocky3:
+    build:
+      context: rocky3/
+    hostname: 'rocky3.big.data'
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./data:/data
+    privileged: true
