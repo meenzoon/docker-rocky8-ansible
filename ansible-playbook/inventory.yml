@@ -1,0 +1,12 @@
+
+ambari-server:
+ hosts:
+   node01.big.data:
+     ansible_host: 192.168.0.1
+
+ambari-agent:
+ hosts:
+   node02.big.data: 
+     ansible_host: 192.168.0.2
+   node03.big.data:
+     ansible_host: 192.168.0.3
