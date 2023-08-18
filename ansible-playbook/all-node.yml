@@ -1,0 +1,219 @@
+# hostname 설정
+- name: set hostname
+  hosts: all
+  remote_user: root
+  tasks:
+    - hostname: 
+        name: "{{ inventory_hostname }}"
+
+# Host 정보 추가
+- import_playbook: add-hosts.yml
+
+# dnf Util 패키지 설치
+- name: Install Util Package
+  hosts: all
+  remote_user: root
+  tasks:
+    - dnf:
+        name: 
+          - net-tools
+          - vim
+          - tar
+          - wget
+          - firewalld
+          - java-1.8.0-openjdk
+          - java-1.8.0-openjdk-devel
+          - python2
+          - python2-devel
+          - python3
+          - python3-devel
+        state: present
+      when:
+        - ansible_facts['os_family'] == "RedHat"
+        - ansible_facts['distribution_major_version'] == "8"
+
+# bdp-ambari repo 가져오기
+- name: add bdp-ambari repo
+  hosts: all
+  remote_user: root
+  tasks:
+    - name: Create bdp-ambari repo file
+      file:
+        path: /etc/yum.repos.d/ambari.repo
+        state: touch
+    - name: bdp-ambari config in repo file
+      lineinfile:
+        path: /etc/yum.repos.d/ambari.repo
+        line: "{{ item.line }}"
+      loop:
+        - {line: '[bdp-ambari]'}
+        - {line: 'name=bdp-ambari'}
+        - {line: 'baseurl=http://ambari.big.data/ambari/BDP/2.7.6/'}
+        - {line: 'enabled=1'}
+        - {line: 'gpgcheck=0'}
+
+# rockylinux repo 가져오기
+- name: add rockylinux repo
+  hosts: all
+  remote_user: root
+  tasks:
+    - name: Create rocky repo file
+      file:
+        path: /etc/yum.repos.d/rocky.repo
+        state: touch
+    - name: rocky config in repo file
+      lineinfile:
+        path: /etc/yum.repos.d/rocky.repo
+        line: "{{ item.line }}"
+      loop: 
+        - {line: '[rocky]'}
+        - {line: 'name=rocky'}
+        - {line: 'baseurl=http://ambari.big.data/os/rocky/8.6/'}
+        - {line: 'enabled=0'}
+        - {line: 'gpgcheck=0'}
+        - {line: ''}
+        - {line: '[rocky-ghetto]'}
+        - {line: 'name=rocky-ghetto'}
+        - {line: 'baseurl=http://ambari.big.data/os/rocky/utils/rocky-ghetto/'}
+        - {line: 'enabled=1'}
+        - {line: 'gpgcheck=0'}
+
+# .ssh 폴더 생성
+- name: Create a .ssh directory if it does not exist
+  hosts: all
+  remote_user: root
+  tasks:
+  - become: yes
+    file:
+      owner: root
+      group: root
+      path: /root/.ssh
+      state: directory
+      mode: 0700
+
+# Root 로그인 활성화
+- name: Root 로그인 enable
+  hosts: all
+  remote_user: root
+  tasks:
+    - replace:
+        path: /etc/ssh/sshd_config
+        regexp: "PasswordAuthentication no"
+        replace: "PasswordAuthentication yes"
+
+# 타임존 변경
+- name: set timezone to Asia/Seoul
+  hosts: all
+  remote_user: root
+  gather_facts: no
+  become: yes
+  tasks:
+    - timezone: name=Asia/Seoul
+
+# SELinux 비활성화
+- name: Disable SELinux
+  hosts: all
+  remote_user: root
+  gather_facts: no
+  tasks:
+    - selinux:
+        state: disabled
+- name: SELinux modify config
+  hosts: all
+  remote_user: root
+  tasks:
+    - replace:
+        path: /etc/selinux/config
+        regexp: "SELINUX=enforcing"
+        replace: "SELINUX=disabled"
+
+# firewalld 비활성화
+- name: firewalld disabled
+  hosts: all
+  remote_user: root
+  gather_facts: no
+  tasks:
+    - systemd_service:
+        name: firewalld
+        enabled: false
+        state: stopped
+
+# SWAP 메모리 사용 관련
+- name: SWAP 메모리 사용 설정
+  hosts: all
+  remote_user: root
+  tasks:
+    - lineinfile:
+        path: /etc/sysctl.conf
+        line: "{{ item.line }}"
+      loop:
+        - {line: '# ambari 사용 중 SWAP 메모리 사용 최소화 설정'}
+        - {line: 'vm.swappiness=0'}
+
+# Kernel 사용 관련
+- name: Kernel 사용 관련
+  hosts: all
+  remote_user: root
+  tasks:
+    - lineinfile:
+        path: /etc/rc.local
+        line: "{{ item.line }}"
+      loop:
+        - {line: '# hugepage 설정 변경'}
+        - {line: 'echo never > /sys/kernel/mm/transparent_hugepage/defrag'}
+        - {line: 'echo never > /sys/kernel/mm/transparent_hugepage/enabled'}
+
+# Update Alternative Python2 추가
+- name: Update Alternative Python2
+  hosts: all
+  remote_user: root
+  tasks:
+    - alternatives:
+        name: python
+        path: /usr/bin/python2
+        state: selected
+
+# Python Util python2-rpm 설치
+- name: Install Python Util Package
+  hosts: all
+  remote_user: root
+  tasks:
+    - dnf:
+        name: 
+          - python2-backports
+          - python2-backports-lzma
+          - python2-six
+          - python2-pycurl
+          - python2-rpm
+          - python2-rpmUtils
+          - python2-urlgrabber
+          - python2-yum
+          - yum-metadata-parser
+        state: installed
+      when:
+        - ansible_facts['os_family'] == "RedHat"
+        - ansible_facts['distribution_major_version'] == "8"
+
+# TODO: bigtop-select 설치
+
+
+# 노드 재시작
+- name: Restart machine
+  hosts: test
+  remote_user: root
+  tasks:
+    - shell: sleep 2 && shutdown -r now "Restarting with Init install"
+      async: 1
+      poll: 0
+      ignore_errors: true
+
+# TODO: 재부팅
+#- name: Init Install | Wait for the server to come back
+#  become: false
+#  delegate_to: localhost
+#  remote_user: root
+#  wait_for:
+#    port: 22
+#    host: "{{ ansible_host }}"
+#    search_regex: SSH
+#    delay: 10

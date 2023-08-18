@@ -1,0 +1,137 @@
+# sshpass 서비스 설치
+- name: Install Time Sync Package
+  hosts: ambari-server
+  remote_user: root
+  tasks:
+    - dnf:
+        name: sshpass
+        state: installed
+
+# TODO: ssh-keygen 생성
+# TODO: sshpass 설정
+
+# 시간 동기화 서비스 설치
+- name: Install Time Sync Package
+  hosts: ambari-server
+  remote_user: root
+  tasks:
+    - dnf:
+        name: chrony
+        state: installed
+
+# chrony 서비스 설정
+# TODO: allow 대역 설정
+- name: Set Configuration chrony
+  hosts: ambari-server
+  remote_user: root
+  tasks:
+    - name: Create chrony config file
+      file:
+        path: /etc/chrony.conf
+        state: touch
+    - name: chrony config in .conf file
+      lineinfile:
+        path: /etc/chrony.conf
+        line: "{{ item.line }}"
+      loop:
+        - {line: 'server localhost iburst'}
+        - {line: ''}
+        - {line: 'log tracking measurements statistics'}
+        - {line: 'logchange 0.5'}
+        - {line: ''}
+        - {line: 'logdir /var/log/chrony'}
+        - {line: ''}
+        - {line: 'allow 192.168.0.0/24'}
+
+# chrony 재시작 및 부팅 시 자동 시작
+- name: chrony restart, enable
+  hosts: ambari-server
+  remote_user: root
+  gather_facts: no
+  tasks:
+    - systemd_service:
+        name: chronyd
+        enabled: true
+        state: restarted
+
+# mariadb-server nodejs npm 설치 및 설정
+- name: Dnf Install MariaDB, Nodejs, Npm
+  hosts: ambari-server
+  remote_user: root
+  tasks:
+    - dnf:
+        name:
+          - mariadb-server
+          - nodejs
+          - npm
+        state: installed
+
+# MariaDB timezone 설정
+- hosts: ambari-agent
+  remote_user: root
+  tasks:
+    - name: Set Configuration MariaDB timezone in my.cnf file
+      lineinfile:
+        path: /etc/my.cnf
+        line: "{{ item.line }}"
+      loop:
+        - {line: '[mysqld]'}
+        - {line: 'default-time-zone='+9:00''}
+      when:
+        - ansible_facts['os_family'] == "RedHat"
+        - ansible_facts['distribution_major_version'] == "8"
+
+# MariaDB 시작
+- name: MariaDB start
+  hosts: ambari-server
+  remote_user: root
+  gather_facts: no
+  tasks:
+    - systemd_service:
+        name: mariadb
+        enabled: true
+        state: started
+
+# TODO: mysql_secure_installation
+
+
+# MariaDB 재시작 미 부팅 시 자동 시작 설정
+- name: MariaDB restart, enable
+  hosts: ambari-server
+  remote_user: root
+  gather_facts: no
+  tasks:
+    - systemd_service:
+        name: mariadb
+        state: restarted
+
+# TODO: 데이터베이스 자동 생성 및 비밀번호 설정 스크립트 실행
+
+
+# TODO: mysql-connector-java 설치
+
+# ambari-server, ambari-agent 설치
+- name: Install Ambari Server, Ambari Agent
+  hosts: ambari-server
+  remote_user: root
+  tasks:
+    - dnf:
+        name:
+          - ambari-server
+          - ambari-agent
+        state: installed
+
+# TODO: ambari-server 설정
+
+# mysql-connector-java 관련 설정값 변경
+- name: MySQL Connector Driver 설정값 변경
+  hosts: ambari-server
+  remote_user: root
+  tasks:
+    - replace:
+        path: /etc/ambari-server/conf/ambari.properties
+        regexp: "com.mysql.jdbc.Driver"
+        replace: "com.mysql.cj.jdbc.Driver"
+      when:
+        - ansible_facts['os_family'] == "RedHat"
+        - ansible_facts['distribution_major_version'] == "8"
