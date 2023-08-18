@@ -10,6 +10,10 @@ services:
     volumes:
       - ./data:/data
     privileged: true
+    networks:
+      default_bridge:
+        ipv4_address: 172.26.0.11
+    command: /sbin/init
   rocky2:
     build:
       context: rocky2/
@@ -19,6 +23,10 @@ services:
     volumes:
       - ./data:/data
     privileged: true
+    networks:
+      default_bridge:
+        ipv4_address: 172.26.0.12
+    command: /sbin/init
   rocky3:
     build:
       context: rocky3/
@@ -28,3 +36,14 @@ services:
     volumes:
       - ./data:/data
     privileged: true
+    networks:
+      default_bridge:
+        ipv4_address: 172.26.0.13
+    command: /sbin/init
+
+networks:
+  default_bridge:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.26.0.0/24
