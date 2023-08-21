@@ -7,8 +7,23 @@
         name: sshpass
         state: installed
 
-# TODO: ssh-keygen 생성
-# TODO: sshpass 설정
+# ssh-keygen 생성
+- hosts: ambari-server
+  remote_user: root
+  tasks:
+    - name: ambari-server generate ssh key
+      shell: /usr/bin/ssh-keygen -t rsa -m PEM -N '' -f ~/.ssh/id_rsa <<< n
+
+# ambari-server에서 각 노드로 비밀번호 없이 접슥을 위해 ssh-copy-id 이용 공개키 복사
+- hosts: ambari-server
+  remote_user: root
+  vars:
+    user: root
+    password: "1234"
+  tasks:
+    - name: ssh-copy-id
+      shell: /usr/bin/sshpass -p "{{ password }}" ssh-copy-id -i ~/.ssh/id_rsa.pub -o StrictHostKeyChecking=no {{ user }}@{{ hostvars[item]['inventory_hostname'] }}
+      loop: "{{ ansible_play_hosts }}"
 
 # 시간 동기화 서비스 설치
 - name: Install Time Sync Package
@@ -24,6 +39,8 @@
 - name: Set Configuration chrony
   hosts: ambari-server
   remote_user: root
+  vars:
+    bandwidth: "192.168.0.0"
   tasks:
     - name: Create chrony config file
       file:
@@ -41,7 +58,7 @@
         - {line: ''}
         - {line: 'logdir /var/log/chrony'}
         - {line: ''}
-        - {line: 'allow 192.168.0.0/24'}
+        - {line: 'allow {{ bandwidth }}/24'}
 
 # chrony 재시작 및 부팅 시 자동 시작
 - name: chrony restart, enable
