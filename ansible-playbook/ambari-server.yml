@@ -124,8 +124,22 @@
 
 # TODO: 데이터베이스 자동 생성 및 비밀번호 설정 스크립트 실행
 
-
-# TODO: mysql-connector-java 설치
+# mysql-connector-java rpm 다운로드 및 설치
+- hosts: ambari-server
+  remote_user: root
+  gather_facts: no
+  tasks:
+    - name: get mysql-connector-java rpm file
+      get_url:
+        url: https://downloads.mysql.com/archives/get/p/3/file/mysql-connector-java-8.0.17-1.el8.noarch.rpm
+        dest: /root/mysql-connector-java-8.0.17-1.el8.noarch.rpm
+        headers:
+          user-agent: curl/7.81.0
+    - name: Install mysql-connector-java
+      shell: dnf -y localinstall /root/mysql-connector-java-8.0.17-1.el8.noarch.rpm
+      # dnf: 
+      #   name: /root/mysql-connector-java-8.0.17-1.el8.noarch.rpm 
+      #   state: present
 
 # ambari-server, ambari-agent 설치
 - name: Install Ambari Server, Ambari Agent
