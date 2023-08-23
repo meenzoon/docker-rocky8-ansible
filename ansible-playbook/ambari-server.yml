@@ -2,6 +2,7 @@
 - name: Install Time Sync Package
   hosts: ambari-server
   remote_user: root
+  gather_facts: no
   tasks:
     - dnf:
         name: sshpass
@@ -29,6 +30,7 @@
 - name: Install Time Sync Package
   hosts: ambari-server
   remote_user: root
+  gather_facts: no
   tasks:
     - dnf:
         name: chrony
@@ -39,6 +41,7 @@
 - name: Set Configuration chrony
   hosts: ambari-server
   remote_user: root
+  gather_facts: no
   vars:
     bandwidth: "192.168.0.0"
   tasks:
@@ -75,6 +78,7 @@
 - name: Dnf Install MariaDB, Nodejs, Npm
   hosts: ambari-server
   remote_user: root
+  gather_facts: no
   tasks:
     - dnf:
         name:
@@ -84,7 +88,7 @@
         state: installed
 
 # MariaDB timezone 설정
-- hosts: ambari-agent
+- hosts: ambari-server
   remote_user: root
   tasks:
     - name: Set Configuration MariaDB timezone in my.cnf file
@@ -93,7 +97,7 @@
         line: "{{ item.line }}"
       loop:
         - {line: '[mysqld]'}
-        - {line: 'default-time-zone='+9:00''}
+        - {line: 'default-time-zone="+9:00"'}
       when:
         - ansible_facts['os_family'] == "RedHat"
         - ansible_facts['distribution_major_version'] == "8"
@@ -145,6 +149,7 @@
 - name: Install Ambari Server, Ambari Agent
   hosts: ambari-server
   remote_user: root
+  gather_facts: no
   tasks:
     - dnf:
         name:
