@@ -113,6 +113,19 @@
         enabled: true
         state: started
 
+# mysql module 실행을 위한 관련 python 패키지 설치
+- hosts: ambari-server
+  remote_user: root
+  tasks:
+    - dnf:
+        name: 
+          - python3
+          - python3-PyMySQL
+        state: present
+      when:
+        - ansible_facts['os_family'] == "RedHat"
+        - ansible_facts['distribution_major_version'] == "8"
+
 # TODO: mysql_secure_installation
 
 
@@ -126,7 +139,48 @@
         name: mariadb
         state: restarted
 
-# TODO: 데이터베이스 자동 생성 및 비밀번호 설정 스크립트 실행
+# mysql 데이터베이스 생성
+- hosts: test
+  remote_user: root
+  gather_facts: no
+  tasks:
+    - mysql_db:
+        name: 
+          - ambari
+          - hive
+          - oozie
+          - ranger
+          - rangerkms
+        login_user: root
+        login_password: clx0261
+        state: present
+
+# mysql 계정 생성
+- name: add mariadb user
+  hosts: ambari-server
+  remote_user: root
+  gather_facts: no
+  vars:
+    mysql_login_user: "root"
+    mysql_login_password: "1234"
+    mysql_user_password: "1234"
+  tasks:
+    - mysql_user:
+        name: "{{ item.user }}"
+        password: "{{ item.password }}"
+        priv: "{{ item.db_name }}.*:ALL,GRANT"
+        login_user: "{{ mysql_login_user }}"
+        login_password: "{{ mysql_login_password }}"
+        host: "%"
+        # user가 없을 경우 host_all 사용 시 오류 메시지 출력됨
+        # host_all: true
+        state: present
+      with_items:
+          - {db_name: 'ambari', user: 'ambari', password: '{{ mysql_user_password }}'}
+          - {db_name: 'hive', user: 'hive', password: '{{ mysql_user_password }}'}
+          - {db_name: 'oozie', user: 'oozie', password: '{{ mysql_user_password }}'}
+          - {db_name: 'ranger', user: 'ranger', password: '{{ mysql_user_password }}'}
+          - {db_name: 'rangerkms', user: 'rangerkms', password: '{{ mysql_user_password }}'}
 
 # mysql-connector-java rpm 다운로드 및 설치
 - hosts: ambari-server
