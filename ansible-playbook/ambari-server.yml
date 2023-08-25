@@ -92,12 +92,23 @@
   remote_user: root
   tasks:
     - name: Set Configuration MariaDB timezone in my.cnf file
-      lineinfile:
-        path: /etc/my.cnf
-        line: "{{ item.line }}"
-      loop:
-        - {line: '[mysqld]'}
-        - {line: 'default-time-zone="+9:00"'}
+      ini_file:
+        path: "/etc/my.cnf.d/server.conf"
+        create: yes
+        section: "mysqld"
+        option: "{{ item.config_name }}"
+        value: "{{ item.config_value }}"
+        no_extra_spaces: yes
+        state: present
+      with_items:
+          - {config_name: 'default-time-zone', config_value: '"+9:00"'}
+          - {config_name: 'max_connections', config_value: '450'}
+          - {config_name: 'wait_timeout', config_value: '300'}
+          - {config_name: 'character_set_server', config_value: 'utf8'}
+          - {config_name: 'character_set_database', config_value: 'utf8'}
+          - {config_name: 'collation_connection', config_value: 'utf8_general_ci'}
+          - {config_name: 'collation_database', config_value: 'utf8_general_ci'}
+          - {config_name: 'collation_server', config_value: 'utf8_general_ci'}
       when:
         - ansible_facts['os_family'] == "RedHat"
         - ansible_facts['distribution_major_version'] == "8"
@@ -126,7 +137,20 @@
         - ansible_facts['os_family'] == "RedHat"
         - ansible_facts['distribution_major_version'] == "8"
 
-# TODO: mysql_secure_installation
+# mysql_secure_installation 실행해 보았지만 실패
+# mysql 기본 비밀번호 설정
+- hosts: ambari-server
+  remote_user: root
+  tasks:
+    - name: set password
+      mysql_user:
+        name: root
+        host: "{{ item }}"
+        password: ""
+      with_items:
+        - 127.0.0.1
+        - ::1
+        - localhost
 
 
 # MariaDB 재시작 미 부팅 시 자동 시작 설정
