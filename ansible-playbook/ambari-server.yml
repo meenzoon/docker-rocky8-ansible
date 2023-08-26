@@ -2,6 +2,7 @@
 - name: Install Time Sync Package
   hosts: ambari-server
   remote_user: root
+  gather_facts: no
   tasks:
     - dnf:
         name: sshpass
@@ -29,6 +30,7 @@
 - name: Install Time Sync Package
   hosts: ambari-server
   remote_user: root
+  gather_facts: no
   tasks:
     - dnf:
         name: chrony
@@ -39,6 +41,7 @@
 - name: Set Configuration chrony
   hosts: ambari-server
   remote_user: root
+  gather_facts: no
   vars:
     bandwidth: "192.168.0.0"
   tasks:
@@ -75,6 +78,7 @@
 - name: Dnf Install MariaDB, Nodejs, Npm
   hosts: ambari-server
   remote_user: root
+  gather_facts: no
   tasks:
     - dnf:
         name:
@@ -84,16 +88,27 @@
         state: installed
 
 # MariaDB timezone 설정
-- hosts: ambari-agent
+- hosts: ambari-server
   remote_user: root
   tasks:
     - name: Set Configuration MariaDB timezone in my.cnf file
-      lineinfile:
-        path: /etc/my.cnf
-        line: "{{ item.line }}"
-      loop:
-        - {line: '[mysqld]'}
-        - {line: 'default-time-zone='+9:00''}
+      ini_file:
+        path: "/etc/my.cnf.d/server.conf"
+        create: yes
+        section: "mysqld"
+        option: "{{ item.config_name }}"
+        value: "{{ item.config_value }}"
+        no_extra_spaces: yes
+        state: present
+      with_items:
+          - {config_name: 'default-time-zone', config_value: '"+9:00"'}
+          - {config_name: 'max_connections', config_value: '450'}
+          - {config_name: 'wait_timeout', config_value: '300'}
+          - {config_name: 'character_set_server', config_value: 'utf8'}
+          - {config_name: 'character_set_database', config_value: 'utf8'}
+          - {config_name: 'collation_connection', config_value: 'utf8_general_ci'}
+          - {config_name: 'collation_database', config_value: 'utf8_general_ci'}
+          - {config_name: 'collation_server', config_value: 'utf8_general_ci'}
       when:
         - ansible_facts['os_family'] == "RedHat"
         - ansible_facts['distribution_major_version'] == "8"
@@ -109,7 +124,33 @@
         enabled: true
         state: started
 
-# TODO: mysql_secure_installation
+# mysql module 실행을 위한 관련 python 패키지 설치
+- hosts: ambari-server
+  remote_user: root
+  tasks:
+    - dnf:
+        name: 
+          - python3
+          - python3-PyMySQL
+        state: present
+      when:
+        - ansible_facts['os_family'] == "RedHat"
+        - ansible_facts['distribution_major_version'] == "8"
+
+# mysql_secure_installation 실행해 보았지만 실패
+# mysql 기본 비밀번호 설정
+- hosts: ambari-server
+  remote_user: root
+  tasks:
+    - name: set password
+      mysql_user:
+        name: root
+        host: "{{ item }}"
+        password: ""
+      with_items:
+        - 127.0.0.1
+        - ::1
+        - localhost
 
 
 # MariaDB 재시작 미 부팅 시 자동 시작 설정
@@ -122,15 +163,71 @@
         name: mariadb
         state: restarted
 
-# TODO: 데이터베이스 자동 생성 및 비밀번호 설정 스크립트 실행
+# mysql 데이터베이스 생성
+- hosts: test
+  remote_user: root
+  gather_facts: no
+  tasks:
+    - mysql_db:
+        name: 
+          - ambari
+          - hive
+          - oozie
+          - ranger
+          - rangerkms
+        login_user: root
+        login_password: clx0261
+        state: present
 
+# mysql 계정 생성
+- name: add mariadb user
+  hosts: ambari-server
+  remote_user: root
+  gather_facts: no
+  vars:
+    mysql_login_user: "root"
+    mysql_login_password: "1234"
+    mysql_user_password: "1234"
+  tasks:
+    - mysql_user:
+        name: "{{ item.user }}"
+        password: "{{ item.password }}"
+        priv: "{{ item.db_name }}.*:ALL,GRANT"
+        login_user: "{{ mysql_login_user }}"
+        login_password: "{{ mysql_login_password }}"
+        host: "%"
+        # user가 없을 경우 host_all 사용 시 오류 메시지 출력됨
+        # host_all: true
+        state: present
+      with_items:
+          - {db_name: 'ambari', user: 'ambari', password: '{{ mysql_user_password }}'}
+          - {db_name: 'hive', user: 'hive', password: '{{ mysql_user_password }}'}
+          - {db_name: 'oozie', user: 'oozie', password: '{{ mysql_user_password }}'}
+          - {db_name: 'ranger', user: 'ranger', password: '{{ mysql_user_password }}'}
+          - {db_name: 'rangerkms', user: 'rangerkms', password: '{{ mysql_user_password }}'}
 
-# TODO: mysql-connector-java 설치
+# mysql-connector-java rpm 다운로드 및 설치
+- hosts: ambari-server
+  remote_user: root
+  gather_facts: no
+  tasks:
+    - name: get mysql-connector-java rpm file
+      get_url:
+        url: https://downloads.mysql.com/archives/get/p/3/file/mysql-connector-java-8.0.17-1.el8.noarch.rpm
+        dest: /root/mysql-connector-java-8.0.17-1.el8.noarch.rpm
+        headers:
+          user-agent: curl/7.81.0
+    - name: Install mysql-connector-java
+      shell: dnf -y localinstall /root/mysql-connector-java-8.0.17-1.el8.noarch.rpm
+      # dnf: 
+      #   name: /root/mysql-connector-java-8.0.17-1.el8.noarch.rpm 
+      #   state: present
 
 # ambari-server, ambari-agent 설치
 - name: Install Ambari Server, Ambari Agent
   hosts: ambari-server
   remote_user: root
+  gather_facts: no
   tasks:
     - dnf:
         name:
