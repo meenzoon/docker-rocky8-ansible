@@ -42,8 +42,6 @@
   hosts: ambari-server
   remote_user: root
   gather_facts: no
-  vars:
-    bandwidth: "192.168.0.0"
   tasks:
     - name: Create chrony config file
       file:
@@ -61,7 +59,7 @@
         - {line: ''}
         - {line: 'logdir /var/log/chrony'}
         - {line: ''}
-        - {line: 'allow {{ bandwidth }}/24'}
+        - {line: 'allow {{ chrony_allow }}'}
 
 # chrony 재시작 및 부팅 시 자동 시작
 - name: chrony restart, enable
@@ -184,10 +182,6 @@
   hosts: ambari-server
   remote_user: root
   gather_facts: no
-  vars:
-    mysql_login_user: "root"
-    mysql_login_password: "1234"
-    mysql_user_password: "1234"
   tasks:
     - mysql_user:
         name: "{{ item.user }}"
