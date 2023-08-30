@@ -2,8 +2,6 @@
 # TODO: repo가 설정된 master_host 정보 변경 필요
 - hosts: all
   remote_user: root
-  vars:
-    master_host: "192.168.0.1"
   tasks:
     - name: generate master host
       lineinfile:

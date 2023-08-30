@@ -1,0 +1,8 @@
+
+master_hosts: '192.168.0.1'
+
+chrony_allow: '192.168.0.0/24'
+
+mysql_login_user: 'root'
+mysql_login_password: '1234'
+mysql_user_password: '1234'
