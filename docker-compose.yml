@@ -3,7 +3,8 @@ version: '3.3'
 services:
   rocky1:
     build:
-      context: rocky1/
+      context: .
+      dockerfile: Dockerfile.ambari-server
     hostname: 'rocky1.big.data'
     stdin_open: true
     tty: true
@@ -16,7 +17,8 @@ services:
     command: /sbin/init
   rocky2:
     build:
-      context: rocky2/
+      context: .
+      dockerfile: Dockerfile.ambari-agent
     hostname: 'rocky2.big.data'
     stdin_open: true
     tty: true
@@ -29,7 +31,8 @@ services:
     command: /sbin/init
   rocky3:
     build:
-      context: rocky3/
+      context: .
+      dockerfile: Dockerfile.ambari-agent
     hostname: 'rocky3.big.data'
     stdin_open: true
     tty: true
