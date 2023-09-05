@@ -7,6 +7,6 @@ RUN dnf -y install epel-release && \
 
 COPY ansible-playbook /root/ansible-playbook
 
-RUN ansible-playbook /root/ansible-playbook/ambari-server.yml
+#RUN ansible-playbook /root/ansible-playbook/ambari-server.yml
 
 CMD [ "/bin/bash" ]
