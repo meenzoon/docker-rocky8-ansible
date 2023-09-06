@@ -1,12 +1,12 @@
 
 ambari-server:
  hosts:
-   node01.big.data:
-     ansible_host: 192.168.0.1
+   rocky1.big.data:
+     ansible_host: 172.26.0.11
 
 ambari-agent:
  hosts:
-   node02.big.data: 
-     ansible_host: 192.168.0.2
-   node03.big.data:
-     ansible_host: 192.168.0.3
+   rocky2.big.data: 
+     ansible_host: 172.26.0.12
+   rocky3.big.data:
+     ansible_host: 172.26.0.13
