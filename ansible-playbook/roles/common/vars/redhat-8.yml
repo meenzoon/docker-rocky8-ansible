@@ -1,0 +1,24 @@
+packages:
+  - net-tools
+  - vim
+  - curl
+  - unzip
+  - tar
+  - wget
+  - firewalld
+  - java-1.8.0-openjdk
+  - java-1.8.0-openjdk-devel
+  - python2
+  - python2-devel
+  - python3
+  - python3-devel
+  - chrony
+  - openssl
+  - openssl-devel
+
+openjdk_package: java-1.8.0-openjdk-devel
+
+ntp_service_name: chronyd
+
+firewall_service_name: firewalld
+
