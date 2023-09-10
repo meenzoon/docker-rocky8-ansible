@@ -1,40 +1,38 @@
+---
+- name: load variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution|lower }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution|lower }}-{{ ansible_distribution_version }}.yml"
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution|lower }}.yml"
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family|lower }}.yml"
+        #- defaults.yml
+      paths:
+        - ../common/vars
+
 # hostname 설정
 - name: set hostname
-  hosts: all
   remote_user: root
-  tasks:
-    - hostname: 
-        name: "{{ inventory_hostname }}"
+  hostname: 
+    name: "{{ inventory_hostname }}"
 
 # Host 정보 추가
-- import_playbook: add-hosts.yml
+- name: add host
+  include_tasks: add-hosts.yml
 
 # dnf Util 패키지 설치
 - name: Install Util Package
-  hosts: all
   remote_user: root
-  tasks:
-    - dnf:
-        name: 
-          - net-tools
-          - vim
-          - tar
-          - wget
-          - firewalld
-          - java-1.8.0-openjdk
-          - java-1.8.0-openjdk-devel
-          - python2
-          - python2-devel
-          - python3
-          - python3-devel
-        state: present
-      when:
-        - ansible_facts['os_family'] == "RedHat"
-        - ansible_facts['distribution_major_version'] == "8"
+  dnf:
+    name: {{ item }}
+    state: present
+  with_items: {{ packages }}
 
 # bdp-ambari repo 가져오기
-- name: add bdp-ambari repo
-  hosts: all
+- block:
+name: add bdp-ambari repo
   remote_user: root
   tasks:
     - name: Create bdp-ambari repo file
@@ -54,7 +52,6 @@
 
 # rockylinux repo 가져오기
 - name: add rockylinux repo
-  hosts: all
   remote_user: root
   tasks:
     - name: Create rocky repo file
@@ -80,7 +77,6 @@
 
 # .ssh 폴더 생성
 - name: Create a .ssh directory if it does not exist
-  hosts: all
   remote_user: root
   tasks:
   - become: yes
@@ -93,7 +89,6 @@
 
 # Root 로그인 활성화
 - name: Root 로그인 enable
-  hosts: all
   remote_user: root
   tasks:
     - replace:
@@ -103,7 +98,6 @@
 
 # 타임존 변경
 - name: set timezone to Asia/Seoul
-  hosts: all
   remote_user: root
   gather_facts: no
   become: yes
@@ -112,14 +106,12 @@
 
 # SELinux 비활성화
 - name: Disable SELinux
-  hosts: all
   remote_user: root
   gather_facts: no
   tasks:
     - selinux:
         state: disabled
 - name: SELinux modify config
-  hosts: all
   remote_user: root
   tasks:
     - replace:
@@ -129,7 +121,6 @@
 
 # firewalld 비활성화
 - name: firewalld disabled
-  hosts: all
   remote_user: root
   gather_facts: no
   tasks:
@@ -152,7 +143,6 @@
 
 # Kernel 사용 관련
 - name: Kernel 사용 관련
-  hosts: all
   remote_user: root
   tasks:
     - lineinfile:
@@ -165,7 +155,6 @@
 
 # Update Alternative Python2 추가
 - name: Update Alternative Python2
-  hosts: all
   remote_user: root
   tasks:
     - alternatives:
@@ -175,7 +164,6 @@
 
 # Python Util python2-rpm 설치
 - name: Install Python Util Package
-  hosts: all
   remote_user: root
   tasks:
     - dnf:
@@ -198,14 +186,13 @@
 
 
 # 노드 재시작
-- name: Restart machine
-  hosts: test
-  remote_user: root
-  tasks:
-    - shell: sleep 2 && shutdown -r now "Restarting with Init install"
-      async: 1
-      poll: 0
-      ignore_errors: true
+# - name: Restart machine
+#   remote_user: root
+#   tasks:
+#     - shell: sleep 2 && shutdown -r now "Restarting with Init install"
+#       async: 1
+#       poll: 0
+#       ignore_errors: true
 
 # TODO: 재부팅
 #- name: Init Install | Wait for the server to come back
