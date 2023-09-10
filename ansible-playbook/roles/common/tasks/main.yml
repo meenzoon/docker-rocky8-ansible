@@ -26,15 +26,12 @@
 - name: Install Util Package
   remote_user: root
   dnf:
-    name: {{ item }}
+    name: "{{ item }}"
     state: present
-  with_items: {{ packages }}
+  with_items: "{{ packages }}"
 
 # bdp-ambari repo 가져오기
 - block:
-name: add bdp-ambari repo
-  remote_user: root
-  tasks:
     - name: Create bdp-ambari repo file
       file:
         path: /etc/yum.repos.d/ambari.repo
@@ -51,9 +48,7 @@ name: add bdp-ambari repo
         - {line: 'gpgcheck=0'}
 
 # rockylinux repo 가져오기
-- name: add rockylinux repo
-  remote_user: root
-  tasks:
+- block:
     - name: Create rocky repo file
       file:
         path: /etc/yum.repos.d/rocky.repo
@@ -78,109 +73,95 @@ name: add bdp-ambari repo
 # .ssh 폴더 생성
 - name: Create a .ssh directory if it does not exist
   remote_user: root
-  tasks:
-  - become: yes
-    file:
-      owner: root
-      group: root
-      path: /root/.ssh
-      state: directory
-      mode: 0700
+  become: yes
+  file:
+    owner: root
+    group: root
+    path: /root/.ssh
+    state: directory
+    mode: 0700
 
 # Root 로그인 활성화
 - name: Root 로그인 enable
   remote_user: root
-  tasks:
-    - replace:
-        path: /etc/ssh/sshd_config
-        regexp: "PasswordAuthentication no"
-        replace: "PasswordAuthentication yes"
+  replace:
+    path: /etc/ssh/sshd_config
+    regexp: "PasswordAuthentication no"
+    replace: "PasswordAuthentication yes"
 
 # 타임존 변경
-- name: set timezone to Asia/Seoul
-  remote_user: root
-  gather_facts: no
-  become: yes
-  tasks:
-    - timezone: name=Asia/Seoul
+# - name: set timezone to Asia/Seoul
+#   remote_user: root
+#   gather_facts: no
+#   become: yes
+#   timezone: 
+#     name=Asia/Seoul
 
 # SELinux 비활성화
-- name: Disable SELinux
-  remote_user: root
-  gather_facts: no
-  tasks:
-    - selinux:
+- block:
+    - name: Disable SELinux
+      selinux:
         state: disabled
-- name: SELinux modify config
-  remote_user: root
-  tasks:
-    - replace:
+    - name: SELinux modify config
+      replace:
         path: /etc/selinux/config
         regexp: "SELINUX=enforcing"
         replace: "SELINUX=disabled"
 
 # firewalld 비활성화
 - name: firewalld disabled
-  remote_user: root
-  gather_facts: no
-  tasks:
-    - systemd_service:
-        name: firewalld
-        enabled: false
-        state: stopped
+  systemd_service:
+    name: firewalld
+    enabled: false
+    state: stopped
 
 # SWAP 메모리 사용 관련
 - name: SWAP 메모리 사용 설정
-  hosts: all
   remote_user: root
-  tasks:
-    - lineinfile:
-        path: /etc/sysctl.conf
-        line: "{{ item.line }}"
-      loop:
-        - {line: '# ambari 사용 중 SWAP 메모리 사용 최소화 설정'}
-        - {line: 'vm.swappiness=0'}
+  lineinfile:
+    path: /etc/sysctl.conf
+    line: "{{ item.line }}"
+  loop:
+    - {line: '# ambari 사용 중 SWAP 메모리 사용 최소화 설정'}
+    - {line: 'vm.swappiness=0'}
 
 # Kernel 사용 관련
 - name: Kernel 사용 관련
   remote_user: root
-  tasks:
-    - lineinfile:
-        path: /etc/rc.local
-        line: "{{ item.line }}"
-      loop:
-        - {line: '# hugepage 설정 변경'}
-        - {line: 'echo never > /sys/kernel/mm/transparent_hugepage/defrag'}
-        - {line: 'echo never > /sys/kernel/mm/transparent_hugepage/enabled'}
+  lineinfile:
+    path: /etc/rc.local
+    line: "{{ item.line }}"
+  loop:
+    - {line: '# hugepage 설정 변경'}
+    - {line: 'echo never > /sys/kernel/mm/transparent_hugepage/defrag'}
+    - {line: 'echo never > /sys/kernel/mm/transparent_hugepage/enabled'}
 
 # Update Alternative Python2 추가
 - name: Update Alternative Python2
   remote_user: root
-  tasks:
-    - alternatives:
-        name: python
-        path: /usr/bin/python2
-        state: selected
+  alternatives:
+    name: python
+    path: /usr/bin/python2
+    state: selected
 
 # Python Util python2-rpm 설치
 - name: Install Python Util Package
   remote_user: root
-  tasks:
-    - dnf:
-        name: 
-          - python2-backports
-          - python2-backports-lzma
-          - python2-six
-          - python2-pycurl
-          - python2-rpm
-          - python2-rpmUtils
-          - python2-urlgrabber
-          - python2-yum
-          - yum-metadata-parser
-        state: installed
-      when:
-        - ansible_facts['os_family'] == "RedHat"
-        - ansible_facts['distribution_major_version'] == "8"
+  dnf:
+    name: 
+      - python2-backports
+      - python2-backports-lzma
+      - python2-six
+      - python2-pycurl
+      - python2-rpm
+      - python2-rpmUtils
+      - python2-urlgrabber
+      - python2-yum
+      - yum-metadata-parser
+    state: installed
+  when:
+    - ansible_facts['os_family'] == "RedHat"
+    - ansible_facts['distribution_major_version'] == "8"
 
 # TODO: bigtop-select 설치
 
