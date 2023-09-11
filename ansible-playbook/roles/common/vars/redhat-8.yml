@@ -16,6 +16,8 @@ packages:
   - openssl
   - openssl-devel
 
+master_host: '127.0.0.1'
+
 openjdk_package: java-1.8.0-openjdk-devel
 
 ntp_service_name: chronyd

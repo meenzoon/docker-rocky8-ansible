@@ -14,17 +14,14 @@
 
 # hostname 설정
 - name: set hostname
-  remote_user: root
   hostname: 
     name: "{{ inventory_hostname }}"
 
 # Host 정보 추가
-- name: add host
-  include_tasks: add-hosts.yml
+- include_tasks: "add-hosts.yml"
 
 # dnf Util 패키지 설치
 - name: Install Util Package
-  remote_user: root
   dnf:
     name: "{{ item }}"
     state: present
@@ -72,8 +69,6 @@
 
 # .ssh 폴더 생성
 - name: Create a .ssh directory if it does not exist
-  remote_user: root
-  become: yes
   file:
     owner: root
     group: root
@@ -83,19 +78,14 @@
 
 # Root 로그인 활성화
 - name: Root 로그인 enable
-  remote_user: root
   replace:
     path: /etc/ssh/sshd_config
     regexp: "PasswordAuthentication no"
     replace: "PasswordAuthentication yes"
 
 # 타임존 변경
-# - name: set timezone to Asia/Seoul
-#   remote_user: root
-#   gather_facts: no
-#   become: yes
-#   timezone: 
-#     name=Asia/Seoul
+- name: set timezone to Asia/Seoul
+  timezone: name=Asia/Seoul
 
 # SELinux 비활성화
 - block:
@@ -117,7 +107,6 @@
 
 # SWAP 메모리 사용 관련
 - name: SWAP 메모리 사용 설정
-  remote_user: root
   lineinfile:
     path: /etc/sysctl.conf
     line: "{{ item.line }}"
@@ -127,7 +116,6 @@
 
 # Kernel 사용 관련
 - name: Kernel 사용 관련
-  remote_user: root
   lineinfile:
     path: /etc/rc.local
     line: "{{ item.line }}"
@@ -138,7 +126,6 @@
 
 # Update Alternative Python2 추가
 - name: Update Alternative Python2
-  remote_user: root
   alternatives:
     name: python
     path: /usr/bin/python2
@@ -146,7 +133,6 @@
 
 # Python Util python2-rpm 설치
 - name: Install Python Util Package
-  remote_user: root
   dnf:
     name: 
       - python2-backports

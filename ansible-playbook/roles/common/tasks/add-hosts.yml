@@ -1,14 +1,14 @@
 # hosts 파일 추가
 # TODO: repo가 설정된 master_host 정보 변경 필요
-- hosts: all
-  remote_user: root
-  tasks:
+- block:
     - name: generate master host
       lineinfile:
         path: /etc/hosts
         line: "{{ master_host }} ambari.big.data"
+        unsafe_writes: true
     - name: generate ambari hosts
       lineinfile:
         path: /etc/hosts
         line: "{{ hostvars[item]['ansible_host'] }} {{ hostvars[item]['inventory_hostname'] }} {{ inventory_hostname_short }}"
+        unsafe_writes: true
       loop: "{{ ansible_play_hosts }}"
