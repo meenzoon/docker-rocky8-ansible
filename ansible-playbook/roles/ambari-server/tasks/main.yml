@@ -61,7 +61,6 @@
 
 # MariaDB timezone 설정
 - name: Set Configuration MariaDB timezone in my.cnf file
-  remote_user: root
   ini_file:
     path: "/etc/my.cnf.d/server.conf"
     create: yes

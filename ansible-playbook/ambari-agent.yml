@@ -2,7 +2,6 @@
 - name: Ambari Agent Init
   hosts: ambari-agent
   remote_user: root
-  gather_facts: false
   roles:
     - ./common
     - ./ambari-agent
