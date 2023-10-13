@@ -1,0 +1,12 @@
+FROM ubuntu:22.04
+
+#RUN dnf -y install epel-release && \
+#    dnf -y install ncurses wget net-tools && \
+#    dnf -y install python3 python3-devel && \
+#    dnf -y install ansible
+
+COPY ansible-playbook /root/ansible-playbook
+
+RUN ansible-playbook -i /root/ansible-playbook/inventory.yml /root/ansible-playbook/ambari-server.yml > /root/ansible.log
+
+CMD [ "/bin/bash" ]
