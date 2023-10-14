@@ -3,10 +3,14 @@ ambari-server:
  hosts:
    rocky1.big.data:
      ansible_host: 172.26.0.11
+     ansible_python_interpreter: usr/bin/python3
 
 ambari-agent:
  hosts:
    rocky2.big.data: 
      ansible_host: 172.26.0.12
+     ansible_python_interpreter: usr/bin/python3
    rocky3.big.data:
      ansible_host: 172.26.0.13
+     ansible_python_interpreter: usr/bin/python3
+
