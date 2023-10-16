@@ -43,6 +43,10 @@
         - {line: 'baseurl=http://ambari.big.data/ambari/BDP/2.7.6/'}
         - {line: 'enabled=1'}
         - {line: 'gpgcheck=0'}
+      when:
+        - ansible_distribution|lower == "redhat"
+        - ansible_distribution_major_version|int == "8"
+
 
 # rockylinux repo 가져오기
 - block:
@@ -66,6 +70,10 @@
         - {line: 'baseurl=http://ambari.big.data/os/rocky/utils/rocky-ghetto/'}
         - {line: 'enabled=1'}
         - {line: 'gpgcheck=0'}
+      when:
+        - ansible_distribution|lower == "redhat"
+        - ansible_distribution_major_version|int == "8"
+
 
 # .ssh 폴더 생성
 - name: Create a .ssh directory if it does not exist
@@ -146,8 +154,8 @@
       - yum-metadata-parser
     state: installed
   when:
-    - ansible_facts['os_family'] == "RedHat"
-    - ansible_facts['distribution_major_version'] == "8"
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
 
 # TODO: bigtop-select 설치
 
