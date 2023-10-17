@@ -15,7 +15,7 @@ services:
   node1:
     <<: *ambari-common
     build:
-      context: ./ubuntu22/
+      context: .
       dockerfile: Dockerfile.ambari-server
     hostname: 'node1.big.data'
     ports:
@@ -26,7 +26,7 @@ services:
   node2:
     <<: *ambari-common
     build:
-      context: ./ubuntu22/
+      context: .
       dockerfile: Dockerfile.ambari-agent
     hostname: 'node2.big.data'
     networks:
@@ -35,7 +35,7 @@ services:
   node3:
     <<: *ambari-common
     build:
-      context: ./ubuntu22/
+      context: .
       dockerfile: Dockerfile.ambari-agent
     hostname: 'node3.big.data'
     networks:

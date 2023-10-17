@@ -15,7 +15,7 @@ services:
   rocky1:
     <<: *ambari-common
     build:
-      context: ./rockylinux8/
+      context: .
       dockerfile: Dockerfile.ambari-server
     hostname: 'rocky1.big.data'
     ports:
@@ -26,7 +26,7 @@ services:
   rocky2:
     <<: *ambari-common
     build:
-      context: ./rockylinux8/
+      context: .
       dockerfile: Dockerfile.ambari-agent
     hostname: 'rocky2.big.data'
     networks:
@@ -35,7 +35,7 @@ services:
   rocky3:
     <<: *ambari-common
     build:
-      context: ./rockylinux8/
+      context: .
       dockerfile: Dockerfile.ambari-agent
     hostname: 'rocky3.big.data'
     networks:
