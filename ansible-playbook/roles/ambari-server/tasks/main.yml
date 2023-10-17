@@ -21,6 +21,9 @@
   dnf:
     name: chrony
     state: installed
+  when:
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
 
 # chrony 서비스 설정
 # TODO: allow 대역 설정
@@ -45,7 +48,7 @@
 
 # chrony 재시작 및 부팅 시 자동 시작
 - name: chrony restart, enable
-  systemd_service:
+  systemd:
     name: chronyd
     enabled: true
     state: restarted
@@ -58,6 +61,9 @@
       - nodejs
       - npm
     state: installed
+  when:
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
 
 # MariaDB timezone 설정
 - name: Set Configuration MariaDB timezone in my.cnf file
@@ -79,8 +85,8 @@
       - {config_name: 'collation_database', config_value: 'utf8_general_ci'}
       - {config_name: 'collation_server', config_value: 'utf8_general_ci'}
   when:
-    - ansible_facts['os_family'] == "RedHat"
-    - ansible_facts['distribution_major_version'] == "8"
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
 
 # MariaDB 시작
 - name: MariaDB start
@@ -97,8 +103,8 @@
       - python3-PyMySQL
     state: present
   when:
-    - ansible_facts['os_family'] == "RedHat"
-    - ansible_facts['distribution_major_version'] == "8"
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
 
 # mysql_secure_installation 실행해 보았지만 실패
 # mysql 기본 비밀번호 설정
@@ -115,7 +121,7 @@
 
 # MariaDB 재시작 미 부팅 시 자동 시작 설정
 - name: MariaDB restart, enable
-  systemd_service:
+  systemd:
     name: mariadb
     state: restarted
 
@@ -164,6 +170,9 @@
       # dnf: 
       #   name: /root/mysql-connector-java-8.0.17-1.el8.noarch.rpm 
       #   state: present
+  when:
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
 
 # ambari-server, ambari-agent 설치
 - name: Install Ambari Server, Ambari Agent
@@ -172,6 +181,9 @@
       - ambari-server
       - ambari-agent
     state: installed
+  when:
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
 
 # TODO: ambari-server 설정
 
