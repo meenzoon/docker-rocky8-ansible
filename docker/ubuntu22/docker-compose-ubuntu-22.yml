@@ -7,9 +7,9 @@ x-ambari-common:
   tty: true
   volumes:
     &ambari-common-volume
-    - ./data:/data
+    - ../../data:/data
   privileged: true
-  command: /sbin/init
+  #command: /sbin/init
 
 services:
   node1:
