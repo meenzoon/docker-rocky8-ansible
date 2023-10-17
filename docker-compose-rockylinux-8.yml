@@ -1,0 +1,50 @@
+version: '3.3'
+
+x-ambari-common:
+  &ambari-common
+  init: true
+  stdin_open: true
+  tty: true
+  volumes:
+    &ambari-common-volume
+    - ./data:/data
+  privileged: true
+  command: /sbin/init
+
+services:
+  rocky1:
+    <<: *ambari-common
+    build:
+      context: ./rockylinux8/
+      dockerfile: Dockerfile.ambari-server
+    hostname: 'rocky1.big.data'
+    ports:
+      - 8080:8080
+    networks:
+      default_bridge:
+        ipv4_address: 172.26.0.11
+  rocky2:
+    <<: *ambari-common
+    build:
+      context: ./rockylinux8/
+      dockerfile: Dockerfile.ambari-agent
+    hostname: 'rocky2.big.data'
+    networks:
+      default_bridge:
+        ipv4_address: 172.26.0.12
+  rocky3:
+    <<: *ambari-common
+    build:
+      context: ./rockylinux8/
+      dockerfile: Dockerfile.ambari-agent
+    hostname: 'rocky3.big.data'
+    networks:
+      default_bridge:
+        ipv4_address: 172.26.0.13
+
+networks:
+  default_bridge:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.26.0.0/24
