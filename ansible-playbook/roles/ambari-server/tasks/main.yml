@@ -194,5 +194,5 @@
     regexp: "com.mysql.jdbc.Driver"
     replace: "com.mysql.cj.jdbc.Driver"
   when:
-    - ansible_facts['os_family'] == "RedHat"
-    - ansible_facts['distribution_major_version'] == "8"
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
