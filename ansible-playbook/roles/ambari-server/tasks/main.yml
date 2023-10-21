@@ -1,7 +1,7 @@
 # sshpass 서비스 설치
 - name: install ssh
   dnf:
-    name: Install Time Sync Package
+    name: sshpass
     state: installed
 
 # ssh-keygen 생성
@@ -12,18 +12,26 @@
 - name: ssh-copy-id
   vars:
     user: root
-    password: "1234"
+    password: {{ssh_password }}
   shell: /usr/bin/sshpass -p "{{ password }}" ssh-copy-id -i ~/.ssh/id_rsa.pub -o StrictHostKeyChecking=no {{ user }}@{{ hostvars[item]['inventory_hostname'] }}
   loop: "{{ ansible_play_hosts }}"
 
 # 시간 동기화 서비스 설치
-- name: Install Time Sync Package
+- name: Install Time Sync Package(dnf)
   dnf:
     name: chrony
     state: installed
   when:
     - ansible_distribution|lower == "redhat"
     - ansible_distribution_major_version|int == "8"
+
+- name: Install Time Sync Package(apt)
+  apt:
+    name: chrony
+    state: installed
+  when:
+    - ansible_distribution|lower == "ubuntu"
+    - ansible_distribution_major_version|int == 22
 
 # chrony 서비스 설정
 # TODO: allow 대역 설정

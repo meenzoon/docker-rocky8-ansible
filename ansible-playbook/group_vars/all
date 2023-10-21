@@ -1,3 +1,4 @@
+ssh_password: '1234'
 
 master_hosts: '192.168.0.1'
 
