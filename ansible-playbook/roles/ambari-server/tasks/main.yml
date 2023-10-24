@@ -3,6 +3,9 @@
   dnf:
     name: sshpass
     state: installed
+  when:
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
 
 # ssh-keygen 생성
 - name: ambari-server generate ssh key
@@ -12,7 +15,7 @@
 - name: ssh-copy-id
   vars:
     user: root
-    password: {{ssh_password }}
+    password: {{ ssh_password }}
   shell: /usr/bin/sshpass -p "{{ password }}" ssh-copy-id -i ~/.ssh/id_rsa.pub -o StrictHostKeyChecking=no {{ user }}@{{ hostvars[item]['inventory_hostname'] }}
   loop: "{{ ansible_play_hosts }}"
 
