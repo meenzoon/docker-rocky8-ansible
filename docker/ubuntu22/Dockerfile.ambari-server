@@ -5,8 +5,4 @@ RUN apt -y update && apt upgrade && \
     apt -y install python3 python3-dev && \
     apt -y install ansible
 
-COPY ansible-playbook /root/ansible-playbook
-
-RUN ansible-playbook -i /root/ansible-playbook/inventory.yml /root/ansible-playbook/ambari-server.yml > /root/ansible.log
-
 CMD [ "/bin/bash" ]
