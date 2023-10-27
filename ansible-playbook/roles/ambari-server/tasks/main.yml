@@ -1,4 +1,16 @@
+# Redhat 8 관련 패키지 실행
+- block:
+    - include_tasks: "redhat-8.yml"
+  when:
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
 
+# Ubuntu 22 관련 패키지 실행
+- block:
+    - include_tasks: "ubuntu-22.yml"
+  when:
+    - ansible_distribution|lower == "ubuntu"
+    - ansible_distribution_major_version|int == 22
 
 # ssh-keygen 생성
 - name: ambari-server generate ssh key
