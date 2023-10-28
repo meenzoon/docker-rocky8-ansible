@@ -1,0 +1,66 @@
+# sshpass 서비스 설치
+- name: install ssh
+  dnf:
+    name: sshpass
+    state: installed
+  when:
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
+
+# 시간 동기화 서비스 설치
+- name: Install Time Sync Package(dnf)
+  dnf:
+    name: chrony
+    state: installed
+  when:
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
+
+# mariadb-server nodejs npm 설치 및 설정
+- name: Dnf Install MariaDB, Nodejs, Npm
+  dnf:
+    name:
+      - mariadb-server
+      - nodejs
+      - npm
+    state: installed
+  when:
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
+
+# mysql-connector-java rpm 다운로드 및 설치
+- block:
+    - name: get mysql-connector-java rpm file
+      get_url:
+        url: https://downloads.mysql.com/archives/get/p/3/file/mysql-connector-java-8.0.17-1.el8.noarch.rpm
+        dest: /root/mysql-connector-java-8.0.17-1.el8.noarch.rpm
+        headers:
+          user-agent: curl/7.81.0
+    - name: Install mysql-connector-java
+      shell: dnf -y localinstall /root/mysql-connector-java-8.0.17-1.el8.noarch.rpm
+  when:
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
+
+# ambari-server, ambari-agent 설치
+- name: Install Ambari Server, Ambari Agent
+  dnf:
+    name:
+      - ambari-server
+      - ambari-agent
+    state: installed
+  when:
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
+
+# TODO: ambari-server 설정
+
+# mysql-connector-java 관련 설정값 변경
+- name: MySQL Connector Driver 설정값 변경
+  replace:
+    path: /etc/ambari-server/conf/ambari.properties
+    regexp: "com.mysql.jdbc.Driver"
+    replace: "com.mysql.cj.jdbc.Driver"
+  when:
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
