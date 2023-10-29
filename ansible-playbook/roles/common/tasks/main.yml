@@ -108,6 +108,9 @@
         path: /etc/selinux/config
         regexp: "SELINUX=enforcing"
         replace: "SELINUX=disabled"
+  when:
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
 
 # firewalld 비활성화
 - name: firewalld disabled
