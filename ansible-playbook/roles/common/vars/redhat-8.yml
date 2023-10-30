@@ -16,6 +16,17 @@ packages:
   - openssl
   - openssl-devel
 
+python_rpm_packages:
+  - python2-backports
+  - python2-backports-lzma
+  - python2-six
+  - python2-pycurl
+  - python2-rpm
+  - python2-rpmUtils
+  - python2-urlgrabber
+  - python2-yum
+  - yum-metadata-parser
+
 master_host: '127.0.0.1'
 
 openjdk_package: java-1.8.0-openjdk-devel

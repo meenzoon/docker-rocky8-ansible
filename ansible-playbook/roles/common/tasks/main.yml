@@ -22,13 +22,10 @@
 
 # dnf Util 패키지 설치
 - name: Install Util Package
-  dnf:
+  package:
     name: "{{ item }}"
     state: present
   with_items: "{{ packages }}"
-  when:
-    - ansible_distribution|lower == "redhat"
-    - ansible_distribution_major_version|int == "8"
 
 # bdp-ambari repo 가져오기
 - block:
@@ -147,21 +144,10 @@
 
 # Python Util python2-rpm 설치
 - name: Install Python Util Package
-  dnf:
-    name: 
-      - python2-backports
-      - python2-backports-lzma
-      - python2-six
-      - python2-pycurl
-      - python2-rpm
-      - python2-rpmUtils
-      - python2-urlgrabber
-      - python2-yum
-      - yum-metadata-parser
+  package:
+    name: "{{ item }}" 
     state: installed
-  when:
-    - ansible_distribution|lower == "redhat"
-    - ansible_distribution_major_version|int == "8"
+  with_items: "{{ python_rpm_packages }}"
 
 # TODO: bigtop-select 설치
 
