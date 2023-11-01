@@ -1,0 +1,9 @@
+time_sync_package: chrony
+
+db_packages:
+  - mariadb-server
+  - nodejs
+  - npm
+
+mysql_python_module_packages:
+  - python3-pymysql
