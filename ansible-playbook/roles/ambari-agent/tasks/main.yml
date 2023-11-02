@@ -1,11 +1,8 @@
 # 시간 동기화 서비스 설치
 - name: Install Time Sync Package
-  dnf:
+  package:
     name: chrony
     state: installed
-  when:
-    - ansible_facts['os_family'] == "RedHat"
-    - ansible_facts['distribution_major_version'] == "8"
 
 # chrony 서비스 설정
 # TODO: master 서버 정보 변경
@@ -38,10 +35,7 @@
 
 # ambari agent 설치
 - name: Install Ambari Agent
-  dnf:
+  package:
     name: ambari-agent
     state: installed
-  when:
-    - ansible_distribution|lower == "redhat"
-    - ansible_distribution_major_version|int == "8"
 
