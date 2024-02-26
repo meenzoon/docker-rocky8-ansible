@@ -103,6 +103,17 @@
 
 # TODO: bigtop-select 설치
 
+# NTP 시작 및 enable
+- name: NTP service is started
+  service:
+    name: "{{ ntp_service_name }}"
+    state: started
+
+- name: NTP service is enabled
+  service:
+    name: "{{ ntp_service_name }}"
+    enabled: yes
+  ignore_errors: true
 
 # 노드 재시작
 # - name: Restart machine

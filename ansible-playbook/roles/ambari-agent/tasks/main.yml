@@ -1,9 +1,3 @@
-# 시간 동기화 서비스 설치
-- name: Install Time Sync Package
-  package:
-    name: chrony
-    state: installed
-
 # chrony 서비스 설정
 # TODO: master 서버 정보 변경
 # TODO: allow 대역 변경
@@ -25,13 +19,6 @@
         - {line: 'logdir /var/log/chrony'}
         - {line: ''}
         - {line: 'allow {{ chrony_allow }}'}
-
-# chrony 재시작 및 부팅 시 자동 시작
-- name: chrony restart, enable
-  systemd_service:
-    name: chronyd
-    enabled: true
-    state: restarted
 
 # ambari agent 설치
 - name: Install Ambari Agent
