@@ -14,6 +14,9 @@ packages:
   - chrony
   - openssl
 
+python_rpm_packages:
+  - 
+
 master_host: '127.0.0.1'
 
 openjdk_package: openjdk-8-jdk
