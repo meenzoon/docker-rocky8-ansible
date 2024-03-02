@@ -93,6 +93,9 @@
     name: python
     path: /usr/bin/python2
     state: selected
+  when:
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
 
 # Python Util python2-rpm 설치
 - name: Install Python Util Package
@@ -102,6 +105,52 @@
   with_items: "{{ python_rpm_packages }}"
 
 # TODO: bigtop-select 설치
+# bdp-ambari repo 가져오기
+- block:
+    - name: Create bdp-ambari repo file
+      file:
+        path: /etc/yum.repos.d/ambari.repo
+        state: touch
+    - name: bdp-ambari config in repo file
+      lineinfile:
+        path: /etc/yum.repos.d/ambari.repo
+        line: "{{ item.line }}"
+      loop:
+        - {line: '[bdp-ambari]'}
+        - {line: 'name=bdp-ambari'}
+        - {line: 'baseurl=http://ambari.big.data/ambari/BDP/2.7.6/'}
+        - {line: 'enabled=1'}
+        - {line: 'gpgcheck=0'}
+  when:
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
+
+
+# rockylinux repo 가져오기
+- block:
+    - name: Create rocky repo file
+      file:
+        path: /etc/yum.repos.d/rocky.repo
+        state: touch
+    - name: rocky config in repo file
+      lineinfile:
+        path: /etc/yum.repos.d/rocky.repo
+        line: "{{ item.line }}"
+      loop: 
+        - {line: '[rocky]'}
+        - {line: 'name=rocky'}
+        - {line: 'baseurl=http://ambari.big.data/os/rocky/8.6/'}
+        - {line: 'enabled=0'}
+        - {line: 'gpgcheck=0'}
+        - {line: ''}
+        - {line: '[rocky-ghetto]'}
+        - {line: 'name=rocky-ghetto'}
+        - {line: 'baseurl=http://ambari.big.data/os/rocky/utils/rocky-ghetto/'}
+        - {line: 'enabled=1'}
+        - {line: 'gpgcheck=0'}
+  when:
+    - ansible_distribution|lower == "redhat"
+    - ansible_distribution_major_version|int == "8"
 
 # NTP 시작 및 enable
 - name: NTP service is started
